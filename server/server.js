@@ -13,9 +13,16 @@ app.use(cors(
     }
 ));
 
-const authRoute = require('./routes/authRoutes');
+const companyJobRoutes = require('./routes/company/jobRoutes');
+const userJobRoutes = require('./routes/user/jobRoutes');
+const applicationRoutes = require('./routes/user/applicationRoutes');
+const authRoutes = require('./routes/authRoutes');
 
-app.use('/api/auth', authRoute);
+app.use('/api/auth', authRoutes);
+app.use('/api/company/jobs', companyJobRoutes);
+app.use('/api/user/jobs', userJobRoutes);
+app.use('/api/user/applications', applicationRoutes);
+
 
 const port = process.env.PORT;
 app.listen(port, () => {
