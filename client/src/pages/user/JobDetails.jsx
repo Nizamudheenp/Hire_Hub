@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../../api/api';
+import { toast } from 'sonner';
 
 const JobDetails = () => {
     const { id } = useParams();
@@ -8,6 +9,7 @@ const JobDetails = () => {
 
     const [job, setJob] = useState(null);
     const [resume, setResume] = useState(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchJob = async () => {
@@ -15,7 +17,9 @@ const JobDetails = () => {
                 const res = await api.get(`/user/jobs/${id}`);
                 setJob(res.data);
             } catch (err) {
-                alert(err.response?.data?.message || 'Failed to load job');
+                toast.error(err.response?.data?.message || 'Failed to load job');
+            } finally {
+                setLoading(false);
             }
         };
 
@@ -30,7 +34,7 @@ const JobDetails = () => {
         e.preventDefault();
 
         if (!resume) {
-            alert('Please upload a resume');
+            toast.warning('Please upload your resume');
             return;
         }
 
@@ -42,35 +46,48 @@ const JobDetails = () => {
                 headers: { 'Content-Type': 'multipart/form-data' },
             });
 
-            alert('Application submitted!');
+            toast.success('Application submitted!');
             navigate('/user/applications');
         } catch (err) {
-            alert(err.response?.data?.message || 'Application failed');
+            toast.error(err.response?.data?.message || 'Application failed');
         }
     };
 
-    if (!job) return <div className="text-white p-8">Loading...</div>;
+    if (loading) return <div className="p-8 text-gray-500">Loading...</div>;
+
+    if (!job) return <div className="p-8 text-red-500">Job not found.</div>;
 
     return (
-        <div className="p-8 bg-gray-900 min-h-screen text-white">
-            <h2 className="text-3xl font-bold mb-4">{job.title}</h2>
-            <p className="text-gray-400 mb-2">Company: {job.company.name}</p>
-            <p className="text-gray-400 mb-2">Location: {job.location}</p>
-            <p className="text-gray-400 mb-2">Skills: {job.skills.join(', ')}</p>
-            <p className="mb-4">{job.description}</p>
+        <div className="mt-24 p-8 bg-gray-50 min-h-screen">
+            <div className="max-w-3xl mx-auto bg-white rounded-xl shadow-md p-8">
+                <h2 className="text-3xl font-semibold mb-4 text-gray-800">{job.title}</h2>
+                <p className="text-gray-500 mb-2"><strong>Company:</strong> {job.company.name}</p>
+                <p className="text-gray-500 mb-2"><strong>Location:</strong> {job.location}</p>
 
-            <form onSubmit={handleApply} className="bg-gray-800 p-4 rounded-lg space-y-4">
-                <input
-                    type="file"
-                    onChange={handleFileChange}
-                    accept=".pdf,.doc,.docx"
-                    className="w-full p-2 rounded bg-gray-700"
-                    required
-                />
-                <button type="submit" className="w-full p-2 bg-green-600 rounded hover:bg-green-500">
-                    Apply Now
-                </button>
-            </form>
+                <div className="flex flex-wrap gap-2 my-4">
+                    {job.skills.map((skill, i) => (
+                        <span key={i} className="bg-gray-100 text-gray-600 text-xs px-3 py-1 rounded-full border border-gray-200">
+                            {skill}
+                        </span>
+                    ))}
+                </div>
+
+                <p className="text-gray-700 mb-6">{job.description}</p>
+
+                <form onSubmit={handleApply} className="space-y-4">
+                    <label className="block text-gray-600 text-sm mb-1">Upload your resume</label>
+                    <input
+                        type="file"
+                        onChange={handleFileChange}
+                        accept=".pdf,.doc,.docx"
+                        className="w-full p-3 border rounded-lg bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                        required
+                    />
+                    <button type="submit" className="w-full bg-green-600 text-white p-3 rounded-lg hover:bg-green-500 transition">
+                        Apply Now
+                    </button>
+                </form>
+            </div>
         </div>
     );
 };

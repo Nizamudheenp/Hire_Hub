@@ -9,12 +9,13 @@ import Navbar from './components/Navbar';
 import JobDetails from './pages/user/JobDetails';
 import MyApplications from './pages/user/MyApplications';
 import CompanyApplications from './pages/company/CompanyApplications';
-
+import { Toaster } from 'sonner';
 
 function App() {
   return (
     <BrowserRouter>
       <Navbar />
+      <Toaster richColors position="top-right" />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/register" element={<Register />} />
